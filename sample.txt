@@ -1,0 +1,724 @@
+/* 本サンプルコードは事前に Gemini 2.5 Pro で作成したプロトタイプです */
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>フリック入力キーパッド</title>
+    <style>
+        /* 基本的なスタイルとリセット */
+        :root {
+            --key-size-vw: 18vw; /* ビューポート幅に基づいたキーの基本サイズ */
+            --key-max-size-px: 70px; /* キーの最大サイズ (ピクセル) */
+            /* モバイルとPCの両方で最適なサイズを計算して適用 */
+            --effective-key-size: min(var(--key-size-vw), var(--key-max-size-px));
+            
+            --key-gap: 2vw; /* キー間の隙間 */
+            --border-radius: 12px;
+            --background-color: #f0f2f5;
+            --key-bg-color: #ffffff;
+            --key-active-bg-color: #d1d5db;
+            --text-color: #111827;
+            --accent-color: #4f46e5;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            overscroll-behavior: none; /* スクロールによるバウンス効果を無効化 */
+            overflow: hidden; /* 全体のスクロールを禁止 */
+        }
+
+        /* 全体のレイアウト */
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* --- 画像ビューワーエリア --- */
+        #image-viewer {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            background-color: #e5e7eb;
+            overflow: hidden; /* はみ出したキーを隠す */
+        }
+
+        #image-display {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.3s ease-in-out;
+        }
+        #image-display.fade {
+            opacity: 0;
+        }
+        
+        #feedback-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: clamp(100px, 30vw, 200px);
+            font-weight: bold;
+            opacity: 0;
+            z-index: 20;
+            pointer-events: none;
+            transition: opacity 0.4s ease-in-out;
+        }
+        #feedback-display.show {
+            opacity: 1;
+        }
+        #feedback-display.correct {
+            color: #ef4444;
+        }
+        #feedback-display.incorrect {
+            color: #3b82f6;
+        }
+
+        #movable-keys-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 5;
+        }
+        
+        /* --- テキスト表示エリア --- */
+        #display-area {
+            padding: 10px;
+            flex-shrink: 0;
+            display: grid;
+            grid-template-columns: 44px 1fr 44px;
+            align-items: center;
+            gap: 10px;
+        }
+        #display {
+            grid-column: 2 / 3;
+            background-color: #fff;
+            border-radius: var(--border-radius);
+            padding: 12px;
+            font-size: clamp(18px, 5vw, 24px);
+            min-height: 1.5em;
+            line-height: 1.5;
+            word-break: break-all;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        .nav-button {
+            position: relative;
+            background-color: #e5e7eb;
+            border: none;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: background-color 0.2s, opacity 0.3s, visibility 0.3s;
+            flex-shrink: 0;
+        }
+        #prev-btn { grid-column: 1 / 2; }
+        #next-btn { grid-column: 3 / 4; }
+
+        .nav-button:hover {
+            background-color: #d1d5db;
+        }
+        .nav-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.5;
+            background-color: #e5e7eb;
+        }
+        .nav-button.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .nav-button svg {
+            fill: var(--text-color);
+            width: 24px;
+            height: 24px;
+        }
+
+        /* --- キーボードエリア --- */
+        #keyboard-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--key-gap);
+            padding: var(--key-gap) calc(var(--effective-key-size) + var(--key-gap)) 6vw; 
+            user-select: none;
+            touch-action: none;
+            background-color: var(--background-color);
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+        }
+
+        .key {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: var(--effective-key-size);
+            height: var(--effective-key-size);
+            margin: auto;
+            background-color: var(--key-bg-color);
+            border-radius: var(--border-radius);
+            font-size: clamp(18px, 5.5vw, 26px);
+            font-weight: 500;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.1s, transform 0.1s, opacity 0.2s, visibility 0.2s;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .key.moved {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .key.dragging {
+            z-index: 1000;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            cursor: grabbing;
+            transition: none; /* ドラッグ中のカクつきを防ぐ */
+        }
+        
+        /* #movable-keys-container内のキー */
+        #movable-keys-container .key {
+            position: absolute;
+            z-index: 6; /* 通常のキーより手前 */
+        }
+
+        .key:active {
+            background-color: var(--key-active-bg-color);
+            transform: scale(0.95);
+        }
+
+        .key.functional {
+             background-color: #e5e7eb;
+             font-size: clamp(14px, 4vw, 20px);
+        }
+        .key.functional:active {
+            background-color: #9ca3af;
+        }
+        
+        /* フリックガイドのスタイル */
+        #flick-guide {
+            position: fixed;
+            width: calc(var(--effective-key-size) * 3);
+            height: calc(var(--effective-key-size) * 3);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 1fr 1fr 1fr;
+            font-size: clamp(18px, 5.5vw, 26px);
+            z-index: 100;
+        }
+
+        .flick-char {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            border-radius: var(--border-radius);
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            color: transparent;
+        }
+        .flick-char.visible { color: var(--text-color); }
+        .flick-char.highlight {
+            background-color: var(--accent-color);
+            color: white;
+            transform: scale(1.1);
+        }
+        .flick-char:nth-child(1) { grid-area: 1 / 2; } /* 上 */
+        .flick-char:nth-child(2) { grid-area: 2 / 1; } /* 左 */
+        .flick-char:nth-child(3) { grid-area: 2 / 2; } /* 中央 */
+        .flick-char:nth-child(4) { grid-area: 2 / 3; } /* 右 */
+        .flick-char:nth-child(5) { grid-area: 3 / 2; } /* 下 */
+        #flick-guide.flick-guide-wa .flick-char:nth-child(5) { display: none; }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <div id="image-viewer">
+            <img id="image-display" src="" alt="表示画像">
+            <div id="feedback-display"></div>
+            <div id="movable-keys-container"></div>
+        </div>
+        
+        <div id="display-area">
+            <button id="prev-btn" class="nav-button">
+                <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path></svg>
+            </button>
+            <div id="display"></div>
+            <button id="next-btn" class="nav-button">
+                <svg viewBox="0 0 24 24"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"></path></svg>
+            </button>
+        </div>
+        
+        <div id="keyboard-container"></div>
+    </div>
+    
+    <div id="flick-guide" class="hidden"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- 1. Constants and Configuration ---
+            const DOM = {
+                display: document.getElementById('display'),
+                keyboardContainer: document.getElementById('keyboard-container'),
+                flickGuide: document.getElementById('flick-guide'),
+                imageViewer: document.getElementById('image-viewer'),
+                imageDisplay: document.getElementById('image-display'),
+                prevBtn: document.getElementById('prev-btn'),
+                nextBtn: document.getElementById('next-btn'),
+                movableKeysContainer: document.getElementById('movable-keys-container'),
+                feedbackDisplay: document.getElementById('feedback-display'),
+            };
+
+            const CONSTANTS = {
+                FLICK_THRESHOLD: 30,
+                LONG_PRESS_DURATION: 1500,
+                SPECIAL_KEYS: { DELETE: '削除', CONFIRM: '確定' },
+                CSS_CLASSES: {
+                    FUNCTIONAL: 'functional',
+                    GUIDE_WA: 'flick-guide-wa',
+                    HIDDEN: 'hidden',
+                    HIGHLIGHT: 'highlight',
+                    VISIBLE: 'visible',
+                    DRAGGING: 'dragging',
+                    MOVED: 'moved',
+                    FADE: 'fade',
+                },
+            };
+            
+            const IMAGE_SOURCES = [
+                'https://placehold.co/1600x900/fca5a5/7f1d1d?text=Image+1',
+                'https://placehold.co/1600x900/86efac/14532d?text=Image+2',
+                'https://placehold.co/1600x900/93c5fd/1e3a8a?text=Image+3',
+            ];
+            
+            const ANSWERS = ['あ', 'い', 'う'];
+
+            const KEY_MAP = {
+                'あ': ['あ', 'い', 'う', 'え', 'お'], 'か': ['か', 'き', 'く', 'け', 'こ'], 'さ': ['さ', 'し', 'す', 'せ', 'そ'],
+                'た': ['た', 'ち', 'つ', 'て', 'と'], 'な': ['な', 'に', 'ぬ', 'ね', 'の'], 'は': ['は', 'ひ', 'ふ', 'へ', 'ほ'],
+                'ま': ['ま', 'み', 'む', 'め', 'も'], 'や': ['や', '（', 'ゆ', '）', 'よ'], 'ら': ['ら', 'り', 'る', 'れ', 'ろ'],
+                'わ': ['わ', 'を', 'ん', 'ー', null],
+            };
+            
+            const KEYBOARD_LAYOUT = [
+                ['あ', 'か', 'さ'], ['た', 'な', 'は'], ['ま', 'や', 'ら'],
+                [CONSTANTS.SPECIAL_KEYS.DELETE, 'わ', CONSTANTS.SPECIAL_KEYS.CONFIRM]
+            ];
+
+            const DIRECTION_TO_GUIDE_INDEX = { 'up': 0, 'left': 1, 'center': 2, 'right': 3, 'down': 4 };
+            const DIRECTION_TO_KEYMAP_INDEX = { 'center': 0, 'left': 1, 'up': 2, 'right': 3, 'down': 4 };
+            
+            // --- 2. State Management ---
+            let currentImageIndex = 0;
+            let isTransitioning = false;
+            let maxVisitedIndex = 0;
+            let movedKeysData = {}; // { 0: [{keyChar, x, y}], 1: [...] }
+
+            let flickingState = { active: false, startX: 0, startY: 0, activeKey: null, direction: 'center', longPressTimer: null };
+            let draggingState = { active: false, targetKey: null, keyChar: null, initialOffsetX: 0, initialOffsetY: 0, fromMovable: false };
+
+            // --- 3. Main Functions ---
+            function init() {
+                createKeyboard();
+                addEventListeners();
+                isTransitioning = true;
+                DOM.prevBtn.disabled = true;
+                DOM.nextBtn.disabled = true;
+                updateImageView(true); // Initial load
+            }
+
+            function createKeyboard() {
+                KEYBOARD_LAYOUT.flat().forEach(keyChar => {
+                    if (!keyChar) return;
+                    const key = createKeyElement(keyChar);
+                    DOM.keyboardContainer.appendChild(key);
+                });
+            }
+            
+            function createKeyElement(keyChar, isMovable = false) {
+                 const key = document.createElement('div');
+                 key.className = 'key';
+                 key.textContent = keyChar;
+                 key.dataset.key = keyChar;
+                 if (Object.values(CONSTANTS.SPECIAL_KEYS).includes(keyChar)) {
+                     key.classList.add(CONSTANTS.CSS_CLASSES.FUNCTIONAL);
+                 }
+                 if(isMovable) {
+                    key.addEventListener('mousedown', handlePressStart);
+                    key.addEventListener('touchstart', handlePressStart, { passive: false });
+                 }
+                 return key;
+            }
+
+            function addEventListeners() {
+                DOM.keyboardContainer.addEventListener('mousedown', handlePressStart);
+                DOM.keyboardContainer.addEventListener('touchstart', handlePressStart, { passive: false });
+                DOM.prevBtn.addEventListener('click', () => changeImage(-1));
+                DOM.nextBtn.addEventListener('click', () => changeImage(1));
+            }
+
+            // --- 4. Event Handlers ---
+            function handlePressStart(e) {
+                const targetKey = e.target.closest('.key');
+                if (!targetKey) return;
+                
+                e.preventDefault();
+                
+                const touch = e.touches ? e.touches[0] : e;
+                flickingState = { ...flickingState, active: true, startX: touch.clientX, startY: touch.clientY, activeKey: targetKey, direction: 'center' };
+
+                clearTimeout(flickingState.longPressTimer);
+                flickingState.longPressTimer = setTimeout(() => {
+                    startDragging(targetKey);
+                }, CONSTANTS.LONG_PRESS_DURATION);
+
+                showFlickGuide(targetKey);
+                
+                document.addEventListener('mousemove', handlePressMove);
+                document.addEventListener('touchmove', handlePressMove, { passive: false });
+                document.addEventListener('mouseup', handlePressEnd);
+                document.addEventListener('touchend', handlePressEnd);
+            }
+
+            function handlePressMove(e) {
+                if (!flickingState.active && !draggingState.active) return;
+                e.preventDefault();
+
+                if (draggingState.active) {
+                    handleDragging(e);
+                    return;
+                }
+
+                const touch = e.touches ? e.touches[0] : e;
+                const dx = touch.clientX - flickingState.startX;
+                const dy = touch.clientY - flickingState.startY;
+                const newDirection = getFlickDirection(dx, dy);
+                if (newDirection !== flickingState.direction) {
+                    flickingState.direction = newDirection;
+                    updateFlickGuideHighlight(newDirection);
+                }
+            }
+            
+            function handlePressEnd() {
+                if (!flickingState.active && !draggingState.active) return;
+
+                clearTimeout(flickingState.longPressTimer);
+                flickingState.longPressTimer = null;
+
+                if (draggingState.active) {
+                    endDragging();
+                } else if (flickingState.active) {
+                    hideFlickGuide();
+                    handleInput(flickingState.activeKey.dataset.key, flickingState.direction);
+                }
+
+                document.removeEventListener('mousemove', handlePressMove);
+                document.removeEventListener('touchmove', handlePressMove);
+                document.removeEventListener('mouseup', handlePressEnd);
+                document.removeEventListener('touchend', handlePressEnd);
+                flickingState.active = false;
+            }
+            
+            // --- 5. Image and View Update Functions ---
+            function changeImage(direction) {
+                if (isTransitioning) return;
+
+                const newIndex = currentImageIndex + direction;
+                // Bounds check
+                if (newIndex < 0 || newIndex >= IMAGE_SOURCES.length) return;
+                // Progression check
+                if (direction > 0 && newIndex > maxVisitedIndex) return;
+
+                if (newIndex !== currentImageIndex) {
+                    isTransitioning = true;
+                    DOM.prevBtn.disabled = true;
+                    DOM.nextBtn.disabled = true;
+                    
+                    currentImageIndex = newIndex;
+                    updateImageView();
+                }
+            }
+            
+            function updateNavButtonVisibility() {
+                DOM.prevBtn.classList.toggle(CONSTANTS.CSS_CLASSES.HIDDEN, currentImageIndex === 0);
+                const isLastImage = currentImageIndex === IMAGE_SOURCES.length - 1;
+                DOM.nextBtn.classList.toggle(CONSTANTS.CSS_CLASSES.HIDDEN, currentImageIndex >= maxVisitedIndex || isLastImage);
+            }
+
+            function updateImageView(isInitial = false) {
+                const updateContentAndFadeIn = () => {
+                    DOM.display.textContent = '';
+                    DOM.movableKeysContainer.innerHTML = '';
+                    const allMovedKeyChars = new Set(Object.values(movedKeysData).flat().map(k => k.keyChar));
+                    document.querySelectorAll('#keyboard-container .key').forEach(key => {
+                        key.classList.toggle(CONSTANTS.CSS_CLASSES.MOVED, allMovedKeyChars.has(key.dataset.key));
+                    });
+                    const keysForThisImage = movedKeysData[currentImageIndex] || [];
+                    keysForThisImage.forEach(({ keyChar, x, y }) => {
+                        const movableKey = createKeyElement(keyChar, true);
+                        movableKey.style.left = `${x}px`;
+                        movableKey.style.top = `${y}px`;
+                        DOM.movableKeysContainer.appendChild(movableKey);
+                    });
+
+                    const onImageLoad = () => {
+                        DOM.imageDisplay.classList.remove(CONSTANTS.CSS_CLASSES.FADE);
+                        setTimeout(() => {
+                            if (isTransitioning) {
+                                isTransitioning = false;
+                                DOM.prevBtn.disabled = false;
+                                DOM.nextBtn.disabled = false;
+                                updateNavButtonVisibility();
+                            }
+                        }, 300);
+                    };
+
+                    DOM.imageDisplay.onload = onImageLoad;
+                    DOM.imageDisplay.src = IMAGE_SOURCES[currentImageIndex];
+                    if (DOM.imageDisplay.complete) onImageLoad();
+                };
+
+                updateNavButtonVisibility();
+                DOM.imageDisplay.classList.add(CONSTANTS.CSS_CLASSES.FADE);
+                setTimeout(updateContentAndFadeIn, isInitial ? 0 : 300);
+            }
+            
+            // --- 6. Helper Functions ---
+            function getFlickDirection(dx, dy) {
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < CONSTANTS.FLICK_THRESHOLD) return 'center';
+                return Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
+            }
+
+            function showFlickGuide(key) {
+                if(draggingState.active) return;
+                const keyChar = key.dataset.key;
+                const chars = KEY_MAP[keyChar];
+                if (!chars || Object.values(CONSTANTS.SPECIAL_KEYS).includes(keyChar)) return;
+                if (keyChar === 'わ') DOM.flickGuide.classList.add(CONSTANTS.CSS_CLASSES.GUIDE_WA);
+
+                const rect = key.getBoundingClientRect();
+                DOM.flickGuide.style.left = `${rect.left + rect.width / 2}px`;
+                DOM.flickGuide.style.top = `${rect.top + rect.height / 2}px`;
+                
+                DOM.flickGuide.innerHTML = '';
+                const flickChars = [chars[2], chars[1], chars[0], chars[3], chars[4]]; // up, left, center, right, down
+                flickChars.forEach(char => {
+                    const div = document.createElement('div');
+                    div.className = 'flick-char';
+                    if (char) {
+                        div.textContent = char;
+                        div.classList.add(CONSTANTS.CSS_CLASSES.VISIBLE);
+                    }
+                    DOM.flickGuide.appendChild(div);
+                });
+                
+                DOM.flickGuide.classList.remove(CONSTANTS.CSS_CLASSES.HIDDEN);
+                updateFlickGuideHighlight('center');
+            }
+            
+            function hideFlickGuide() {
+                DOM.flickGuide.classList.add(CONSTANTS.CSS_CLASSES.HIDDEN);
+                DOM.flickGuide.classList.remove(CONSTANTS.CSS_CLASSES.GUIDE_WA);
+            }
+
+            function updateFlickGuideHighlight(direction) {
+                 const children = DOM.flickGuide.children;
+                 [...children].forEach(c => c.classList.remove(CONSTANTS.CSS_CLASSES.HIGHLIGHT));
+                 const index = DIRECTION_TO_GUIDE_INDEX[direction];
+                 if (index !== undefined && children[index]) children[index].classList.add(CONSTANTS.CSS_CLASSES.HIGHLIGHT);
+            }
+
+            function handleInput(keyChar, direction) {
+                if (isTransitioning) return;
+                const index = DIRECTION_TO_KEYMAP_INDEX[direction];
+                switch (keyChar) {
+                    case CONSTANTS.SPECIAL_KEYS.DELETE:
+                        DOM.display.textContent = DOM.display.textContent.slice(0, -1);
+                        break;
+                    case CONSTANTS.SPECIAL_KEYS.CONFIRM:
+                        checkAnswer();
+                        break;
+                    default:
+                        if (KEY_MAP[keyChar] && KEY_MAP[keyChar][index]) {
+                           DOM.display.textContent += KEY_MAP[keyChar][index];
+                        }
+                        break;
+                }
+            }
+
+            // --- 7. Quiz Functions ---
+            function checkAnswer() {
+                if (isTransitioning) return;
+                const userAnswer = DOM.display.textContent;
+                const correctAnswer = ANSWERS[currentImageIndex];
+                showFeedback(userAnswer === correctAnswer);
+            }
+            
+            function showFeedback(isCorrect) {
+                isTransitioning = true;
+                DOM.prevBtn.disabled = true;
+                DOM.nextBtn.disabled = true;
+
+                const feedback = DOM.feedbackDisplay;
+                feedback.textContent = isCorrect ? '〇' : '✗';
+                feedback.className = 'feedback-display'; // Reset
+                feedback.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+                requestAnimationFrame(() => feedback.classList.add('show'));
+
+                setTimeout(() => {
+                    feedback.classList.remove('show');
+                    setTimeout(() => {
+                        if (isCorrect) {
+                            if (currentImageIndex === maxVisitedIndex) {
+                                maxVisitedIndex++;
+                            }
+                            const isLastImage = currentImageIndex === IMAGE_SOURCES.length - 1;
+                            if (!isLastImage) {
+                                // changeImage(1) relies on currentImageIndex, so we increment it first
+                                currentImageIndex++;
+                                updateImageView();
+                            } else {
+                                isTransitioning = false;
+                                DOM.prevBtn.disabled = false;
+                                DOM.nextBtn.disabled = true;
+                                updateNavButtonVisibility();
+                            }
+                        } else {
+                            DOM.display.textContent = '';
+                            isTransitioning = false;
+                            DOM.prevBtn.disabled = false;
+                            DOM.nextBtn.disabled = false;
+                            updateNavButtonVisibility();
+                        }
+                    }, 400); // Wait for fade-out
+                }, 800); // Show for 0.8s
+            }
+            
+            // --- 8. Dragging Functions ---
+            function startDragging(key) {
+                flickingState.active = false;
+                hideFlickGuide();
+                
+                const keyChar = key.dataset.key;
+                const fromMovable = key.parentElement === DOM.movableKeysContainer;
+
+                draggingState = { ...draggingState, active: true, targetKey: key, keyChar, fromMovable };
+
+                if (fromMovable) {
+                    movedKeysData[currentImageIndex] = movedKeysData[currentImageIndex].filter(k => k.keyChar !== keyChar);
+                }
+                
+                key.classList.add(CONSTANTS.CSS_CLASSES.DRAGGING);
+            }
+            
+            function handleDragging(e) {
+                if (!draggingState.active) return;
+                const touch = e.touches ? e.touches[0] : e;
+                const dx = touch.clientX - flickingState.startX;
+                const dy = touch.clientY - flickingState.startY;
+                draggingState.targetKey.style.transform = `translate(${dx}px, ${dy}px) scale(1.1)`;
+            }
+
+            function endDragging() {
+                if (!draggingState.active) return;
+
+                const key = draggingState.targetKey;
+                const fromMovable = draggingState.fromMovable;
+                const keyChar = draggingState.keyChar;
+
+                // Immediately hide the key being dragged to prevent any flickering.
+                key.style.visibility = 'hidden';
+
+                const keyRect = key.getBoundingClientRect();
+                const viewerRect = DOM.imageViewer.getBoundingClientRect();
+                
+                const isInViewer = (
+                    keyRect.top >= viewerRect.top &&
+                    keyRect.left >= viewerRect.left &&
+                    keyRect.bottom <= viewerRect.bottom &&
+                    keyRect.right <= viewerRect.right
+                );
+
+                // --- 1. Update Data Model ---
+                Object.keys(movedKeysData).forEach(index => {
+                    movedKeysData[index] = movedKeysData[index].filter(k => k.keyChar !== keyChar);
+                });
+
+                if (isInViewer) {
+                    if (!movedKeysData[currentImageIndex]) {
+                        movedKeysData[currentImageIndex] = [];
+                    }
+                    movedKeysData[currentImageIndex].push({
+                        keyChar: keyChar,
+                        x: keyRect.left - viewerRect.left,
+                        y: keyRect.top - viewerRect.top,
+                    });
+                }
+                
+                // --- 2. Schedule View Update and Cleanup with requestAnimationFrame ---
+                // This ensures operations happen in sync with the browser's rendering cycle.
+                requestAnimationFrame(() => {
+                    // --- Frame 1: Update the main view based on the new data model ---
+                    updateImageView(true);
+
+                    // --- Frame 2: After the view is updated, clean up the original dragged element ---
+                    requestAnimationFrame(() => {
+                        if (fromMovable) {
+                            // If the key was a clone from the image area, just remove it.
+                            key.remove();
+                        } else {
+                            // If the key was from the main keypad, reset its styles.
+                            const originalKey = document.querySelector(`#keyboard-container .key[data-key="${keyChar}"]`);
+                            if(originalKey) {
+                                originalKey.style.transition = 'none'; // Prevent animation
+                                originalKey.classList.remove(CONSTANTS.CSS_CLASSES.DRAGGING);
+                                originalKey.style.transform = '';
+                                originalKey.style.visibility = ''; // Reset visibility
+                                
+                                // Re-enable transitions for future interactions
+                                requestAnimationFrame(() => {
+                                    originalKey.style.transition = '';
+                                });
+                            }
+                        }
+                        draggingState.active = false;
+                    });
+                });
+            }
+
+            // --- 9. Initialization ---
+            init();
+        });
+    </script>
+
+</body>
+</html>
+
