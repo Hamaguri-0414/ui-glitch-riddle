@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="description" content="UI破壊謎 - UIパーツを動かして謎を解くWebアプリケーション">
+    <title>UI破壊謎</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="assets/css/reset.css">
+    <link rel="stylesheet" href="assets/css/variables.css">
+    <link rel="stylesheet" href="assets/css/layout.css">
+    <link rel="stylesheet" href="assets/css/components.css">
+    <link rel="stylesheet" href="assets/css/animations.css">
+</head>
+<body>
+
+    <!-- タイトル画面 -->
+    <div id="title-screen" class="screen">
+        <h1 class="title">UI破壊謎</h1>
+        <a href="https://x.com/a0a8u1i4" target="_blank" rel="noopener" class="author-link">作者 @a0a8u1i4</a>
+        <button id="start-btn" class="primary-button">はじめる</button>
+    </div>
+
+    <!-- 遊び方ダイアログ -->
+    <div id="howto-dialog" class="dialog hidden">
+        <div class="dialog-overlay"></div>
+        <div class="dialog-content">
+            <div class="dialog-body">
+                <h2>遊び方</h2>
+                <div class="howto-text">
+                    <p>この謎解きは、情報が不足している謎解きを成立させながら解き進める謎解きです。</p>
+                    <p>灰色背景の領域にあるパーツは、2秒以上押下することで白色背景のどこかに移動することができます。</p>
+                    <div class="example-image">
+                        <img src="assets/images/example.png" alt="遊び方の例" id="example-img">
+                    </div>
+                    <p>以下の条件を全て満たしたときに正解と判定されます。</p>
+                    <ul>
+                        <li>入力欄の内側に謎の答えが表示されている</li>
+                        <li>かくていを押したタイミングで、謎が矛盾なく成立している</li>
+                    </ul>
+                    <p>全7問の謎が順番に出題されます。全ての謎の解法は1通りであり、前の謎に戻って解きなおす必要はありません。</p>
+                    <p>7問目の謎に正解できたらオールクリアであり、隠し要素は一切ありません。</p>
+                    <p>「ヒント」を押すことで、現在表示されている謎のヒントが表示されます。</p>
+                    <p>謎を解く上で、ソースコードを閲覧することが必要となる謎はありません。</p>
+                    <p>不具合と思われる現象が確認された場合は、contact@hamaguri.dev まで連絡していただけると大変助かります。</p>
+                </div>
+            </div>
+            <button id="start-puzzle-btn" class="primary-button">謎を解きはじめる</button>
+            <button id="close-howto-btn" class="primary-button hidden">閉じる</button>
+        </div>
+    </div>
+
+    <!-- ヒントダイアログ -->
+    <div id="hint-dialog" class="dialog hidden">
+        <div class="dialog-overlay"></div>
+        <div class="dialog-content">
+            <div class="dialog-body">
+                <h2>ヒント</h2>
+                <p id="hint-text"></p>
+            </div>
+            <button id="close-hint-btn" class="primary-button">閉じる</button>
+        </div>
+    </div>
+
+    <!-- メイン画面 -->
+    <div id="main-screen" class="screen hidden">
+        <div class="app-container">
+
+            <!-- 画像ビューワーエリア -->
+            <div id="image-viewer">
+                <img id="image-display" src="" alt="謎画像">
+                <div id="feedback-display"></div>
+                <div id="movable-keys-container"></div>
+            </div>
+
+            <!-- テキスト表示・ナビゲーションエリア -->
+            <div id="display-area">
+                <button id="prev-btn" class="nav-button hidden">
+                    <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path></svg>
+                </button>
+                <div id="display"></div>
+                <button id="next-btn" class="nav-button hidden">
+                    <svg viewBox="0 0 24 24"><path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"></path></svg>
+                </button>
+            </div>
+
+            <!-- キーボードエリア -->
+            <div id="keyboard-container"></div>
+        </div>
+    </div>
+
+    <!-- クリア画面 -->
+    <div id="clear-screen" class="screen hidden">
+        <h1 class="clear-title">GAME CLEAR</h1>
+        <p class="clear-subtitle">※これ以上謎はありません</p>
+        <button id="share-btn" class="primary-button">クリアをXにシェアする</button>
+    </div>
+
+    <!-- フリックガイド -->
+    <div id="flick-guide" class="hidden"></div>
+
+    <!-- 通知メッセージ -->
+    <div id="notification" class="notification hidden"></div>
+
+    <!-- JavaScript -->
+    <script src="assets/js/state.js"></script>
+    <script src="assets/js/utils.js"></script>
+    <script src="assets/js/keyboard.js"></script>
+    <script src="assets/js/drag.js"></script>
+    <script src="assets/js/puzzle.js"></script>
+    <script src="assets/js/navigation.js"></script>
+    <script src="assets/js/main.js"></script>
+</body>
+</html>
+```

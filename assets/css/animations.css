@@ -1,0 +1,71 @@
+/* Animations */
+
+/* フェードイン */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* フェードアウト */
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+/* スライドアップ */
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* スライドダウン */
+@keyframes slideDown {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* パルス */
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+/* 画面遷移アニメーション */
+.screen {
+    animation: fadeIn var(--transition-slow);
+}
+
+/* ダイアログアニメーション */
+.dialog-content {
+    animation: slideDown 0.3s ease-out;
+}
+
+/* 通知アニメーション */
+.notification.show {
+    animation: fadeIn var(--transition-slow);
+}
+```

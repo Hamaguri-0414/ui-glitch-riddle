@@ -1,0 +1,51 @@
+/* CSS Variables */
+:root {
+    /* === コンテナサイズ === */
+    --app-max-width: 600px;
+    --container-width: min(100vw, var(--app-max-width));
+
+    /* === 画像エリア (4:3比率固定) === */
+    --image-width: var(--container-width);
+    --image-height: calc(var(--image-width) * 0.75);
+
+    /* === UIパーツサイズ (画像幅の比率ベース) === */
+    --key-size: calc(var(--image-width) * 0.18);
+    --key-gap: calc(var(--image-width) * 0.02);
+    --key-font-size: calc(var(--key-size) * 0.36);
+    --border-radius: calc(var(--image-width) * 0.02);
+
+    /* === カラーパレット === */
+    --color-background: #f0f2f5;
+    --color-white: #ffffff;
+    --color-gray-light: #e5e7eb;
+    --color-gray-medium: #d1d5db;
+    --color-gray-dark: #9ca3af;
+    --color-text: #111827;
+    --color-accent: #4f46e5;
+    --color-correct: #ef4444;
+    --color-incorrect: #3b82f6;
+
+    /* === シャドウ === */
+    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.2);
+
+    /* === トランジション === */
+    --transition-fast: 0.1s ease;
+    --transition-normal: 0.2s ease;
+    --transition-slow: 0.3s ease;
+
+    /* === Z-Index === */
+    --z-base: 1;
+    --z-movable-keys: 5;
+    --z-movable-key: 6;
+    --z-nav-button: 10;
+    --z-feedback: 20;
+    --z-flick-guide: 100;
+    --z-dialog-overlay: 1000;
+    --z-dialog-content: 1001;
+    --z-notification: 2000;
+    --z-debug: 9998;
+    --z-debug-inspector: 9999;
+}
+```

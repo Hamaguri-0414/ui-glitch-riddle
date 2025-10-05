@@ -1,0 +1,267 @@
+/* Layout Styles */
+
+/* === 画面共通 === */
+.screen {
+    display: none;
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--color-background);
+}
+
+.screen.active {
+    display: flex;
+}
+
+/* === タイトル画面 === */
+#title-screen {
+    position: relative;
+}
+
+.title {
+    font-size: clamp(48px, 12vw, 72px);
+    font-weight: bold;
+    color: var(--color-text);
+    margin-bottom: 60px;
+}
+
+.author-link {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 14px;
+    color: var(--color-accent);
+    text-decoration: underline;
+}
+
+/* === メイン画面 === */
+.app-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: var(--app-max-width);
+    height: 100%;
+    margin: 0 auto;
+}
+
+/* 画像ビューワーエリア */
+#image-viewer {
+    position: relative;
+    width: var(--image-width);
+    height: var(--image-height);
+    background-color: var(--color-gray-light);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+#image-display {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity var(--transition-slow);
+}
+
+#image-display.fade {
+    opacity: 0;
+}
+
+#feedback-display {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: clamp(100px, 30vw, 200px);
+    font-weight: bold;
+    opacity: 0;
+    z-index: var(--z-feedback);
+    pointer-events: none;
+    transition: opacity 0.4s ease-in-out;
+}
+
+#feedback-display.show {
+    opacity: 1;
+}
+
+#feedback-display.correct {
+    color: var(--color-correct);
+}
+
+#feedback-display.incorrect {
+    color: var(--color-incorrect);
+}
+
+#movable-keys-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: var(--z-movable-keys);
+    pointer-events: none;
+}
+
+#movable-keys-container .key {
+    pointer-events: auto;
+}
+
+/* テキスト表示・ナビゲーションエリア */
+#display-area {
+    padding: 10px;
+    flex-shrink: 0;
+    display: grid;
+    grid-template-columns: 44px 1fr 44px;
+    align-items: center;
+    gap: 10px;
+}
+
+#display {
+    grid-column: 2 / 3;
+    background-color: var(--color-white);
+    border-radius: var(--border-radius);
+    padding: 12px;
+    font-size: clamp(18px, 5vw, 24px);
+    min-height: 1.5em;
+    line-height: 1.5;
+    word-break: break-all;
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+}
+
+/* キーボードエリア */
+#keyboard-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--key-gap);
+    padding: var(--key-gap) calc(var(--key-size) + var(--key-gap)) 6vw;
+    user-select: none;
+    touch-action: none;
+    background-color: var(--color-background);
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+/* === クリア画面 === */
+#clear-screen {
+    text-align: center;
+    padding: 20px;
+}
+
+.clear-title {
+    font-size: clamp(48px, 12vw, 72px);
+    font-weight: bold;
+    color: var(--color-text);
+    margin-bottom: 20px;
+}
+
+.clear-subtitle {
+    font-size: clamp(16px, 4vw, 20px);
+    color: var(--color-text);
+    margin-bottom: 40px;
+}
+
+/* === ダイアログ === */
+.dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: var(--z-dialog-overlay);
+}
+
+.dialog.hidden {
+    display: none;
+}
+
+.dialog-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: var(--z-dialog-overlay);
+}
+
+.dialog-content {
+    position: relative;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    background-color: var(--color-white);
+    border-radius: calc(var(--border-radius) * 2);
+    padding: 24px;
+    box-shadow: var(--shadow-lg);
+    z-index: var(--z-dialog-content);
+    display: flex;
+    flex-direction: column;
+}
+
+.dialog-body {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 20px;
+}
+
+.dialog-body h2 {
+    font-size: clamp(24px, 6vw, 32px);
+    font-weight: bold;
+    margin-bottom: 16px;
+    color: var(--color-text);
+}
+
+.dialog-body p,
+.dialog-body ul {
+    font-size: clamp(14px, 3.5vw, 16px);
+    line-height: 1.6;
+    color: var(--color-text);
+    margin-bottom: 12px;
+}
+
+.dialog-body ul {
+    padding-left: 20px;
+    list-style: disc;
+}
+
+.howto-text {
+    user-select: text;
+    -webkit-user-select: text;
+}
+
+.example-image {
+    width: 100%;
+    margin: 16px 0;
+    text-align: center;
+}
+
+.example-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--border-radius);
+}
+
+/* === 通知 === */
+.notification {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: var(--color-white);
+    padding: 16px 24px;
+    border-radius: var(--border-radius);
+    font-size: clamp(14px, 3.5vw, 16px);
+    z-index: var(--z-notification);
+    opacity: 0;
+    transition: opacity var(--transition-slow);
+    pointer-events: none;
+}
+
+.notification.show {
+    opacity: 1;
+}
+```

@@ -1,0 +1,189 @@
+/* Component Styles */
+
+/* === ボタン === */
+.primary-button {
+    background-color: var(--color-accent);
+    color: var(--color-white);
+    font-size: clamp(16px, 4vw, 20px);
+    font-weight: 500;
+    padding: 14px 32px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-md);
+    transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.primary-button:hover {
+    background-color: #4338ca;
+}
+
+.primary-button:active {
+    transform: scale(0.98);
+}
+
+/* ナビゲーションボタン */
+.nav-button {
+    position: relative;
+    background-color: var(--color-gray-light);
+    border: none;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: var(--z-nav-button);
+    transition: background-color var(--transition-normal), opacity var(--transition-slow), visibility var(--transition-slow);
+    flex-shrink: 0;
+}
+
+#prev-btn {
+    grid-column: 1 / 2;
+}
+
+#next-btn {
+    grid-column: 3 / 4;
+}
+
+.nav-button:hover {
+    background-color: var(--color-gray-medium);
+}
+
+.nav-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    background-color: var(--color-gray-light);
+}
+
+.nav-button.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.nav-button svg {
+    fill: var(--color-text);
+    width: 24px;
+    height: 24px;
+}
+
+/* === キー === */
+.key {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: var(--key-size);
+    height: var(--key-size);
+    margin: auto;
+    background-color: var(--color-white);
+    border-radius: var(--border-radius);
+    font-size: var(--key-font-size);
+    font-weight: 500;
+    box-shadow: var(--shadow-md);
+    transition: background-color var(--transition-fast), transform var(--transition-fast), opacity var(--transition-normal), visibility var(--transition-normal);
+    cursor: pointer;
+    position: relative;
+}
+
+.key.functional {
+    background-color: var(--color-gray-light);
+    font-size: calc(var(--key-font-size) * 0.8);
+}
+
+.key.functional:active {
+    background-color: var(--color-gray-dark);
+}
+
+.key:active {
+    background-color: var(--color-gray-medium);
+    transform: scale(0.95);
+}
+
+.key.moved {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.key.dragging {
+    z-index: 1000;
+    box-shadow: var(--shadow-lg);
+    cursor: grabbing;
+    transition: none;
+}
+
+/* movable-keys-container内のキー */
+#movable-keys-container .key {
+    position: absolute;
+    z-index: var(--z-movable-key);
+}
+
+/* === フリックガイド === */
+#flick-guide {
+    position: fixed;
+    width: calc(var(--key-size) * 3);
+    height: calc(var(--key-size) * 3);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    font-size: var(--key-font-size);
+    z-index: var(--z-flick-guide);
+}
+
+#flick-guide.hidden {
+    display: none;
+}
+
+.flick-char {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    border-radius: var(--border-radius);
+    background-color: rgba(255, 255, 255, 0.95);
+    box-shadow: var(--shadow-md);
+    color: transparent;
+    transition: background-color var(--transition-fast), transform var(--transition-fast), color var(--transition-fast);
+}
+
+.flick-char.visible {
+    color: var(--color-text);
+}
+
+.flick-char.highlight {
+    background-color: var(--color-accent);
+    color: var(--color-white);
+    transform: scale(1.1);
+}
+
+.flick-char:nth-child(1) {
+    grid-area: 1 / 2;
+}
+
+.flick-char:nth-child(2) {
+    grid-area: 2 / 1;
+}
+
+.flick-char:nth-child(3) {
+    grid-area: 2 / 2;
+}
+
+.flick-char:nth-child(4) {
+    grid-area: 2 / 3;
+}
+
+.flick-char:nth-child(5) {
+    grid-area: 3 / 2;
+}
+
+#flick-guide.flick-guide-wa .flick-char:nth-child(5) {
+    display: none;
+}
+
+/* === ユーティリティ === */
+.hidden {
+    display: none !important;
+}
+```
