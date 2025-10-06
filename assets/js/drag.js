@@ -373,23 +373,16 @@ const DragSystem = (() => {
                 }
 
                 log.info('targetContainer exists:', !!targetContainer);
-                
+
                 if (targetContainer) {
                     const displayKey = Keyboard.createKeyElement(keyChar, true);
-                    
+
                     // 入力欄内での実際の相対位置を計算
                     const actualXRatio = Math.abs(xRatio);
                     const actualYRatio = Math.abs(yRatio);
-                    
-                    // 入力欄のサイズを取得
-                    const containerRect = targetContainer.getBoundingClientRect();
-                    const xPos = actualXRatio * containerRect.width;
-                    const yPos = actualYRatio * containerRect.height;
-                    
+
                     // 通常のキースタイルを適用
                     displayKey.style.position = 'absolute';
-                    displayKey.style.left = `${xPos}px`;
-                    displayKey.style.top = `${yPos}px`;
                     displayKey.style.transform = 'translate(-50%, -50%)'; // 中央基準で配置
                     displayKey.style.zIndex = '20'; // 親要素より上に表示
                     displayKey.style.pointerEvents = 'auto';
@@ -399,9 +392,21 @@ const DragSystem = (() => {
                     displayKey.addEventListener('touchstart', handleMovableKeyPress, { passive: false });
 
                     targetContainer.appendChild(displayKey);
-                    console.log(`🔑 Key "${keyChar}" added at position (${xPos.toFixed(1)}, ${yPos.toFixed(1)}) in container:`, targetContainer.id);
-                    console.log(`🔑 Container size:`, containerRect.width, 'x', containerRect.height);
-                    log.info(`Key "${keyChar}" placed in display container`);
+
+                    // レイアウト確定後に位置を設定
+                    requestAnimationFrame(() => {
+                        const containerWidth = targetContainer.offsetWidth;
+                        const containerHeight = targetContainer.offsetHeight;
+                        const xPos = actualXRatio * containerWidth;
+                        const yPos = actualYRatio * containerHeight;
+
+                        displayKey.style.left = `${xPos}px`;
+                        displayKey.style.top = `${yPos}px`;
+
+                        console.log(`🔑 Key "${keyChar}" positioned at (${xPos.toFixed(1)}, ${yPos.toFixed(1)}) in container:`, targetContainer.id);
+                        console.log(`🔑 Container size:`, containerWidth, 'x', containerHeight);
+                        log.info(`Key "${keyChar}" placed in display container`);
+                    });
                 } else {
                     log.error('No display keys container found!');
                 }
