@@ -9,7 +9,8 @@
     --image-height: calc(var(--image-width) * 0.75);
 
     /* === UIパーツサイズ (コンテナ幅の比率ベース) === */
-    --key-size: calc(var(--container-width) / 5 - var(--key-gap) * 2);
+    --keyboard-width: calc(var(--container-width) * 0.8);
+    --key-size: calc(var(--keyboard-width) / 5 - var(--key-gap) * 2);
     --key-gap: 0.2vw;
     --key-font-size: calc(var(--key-size) * 0.36);
     --border-radius: 8px;
