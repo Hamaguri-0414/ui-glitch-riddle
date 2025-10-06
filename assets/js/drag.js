@@ -302,9 +302,55 @@ const DragSystem = (() => {
         // 現在の謎の移動済みキーを配置
         const viewerRect = DOM.imageViewer.getBoundingClientRect();
 
+        // 入力欄を先に作成（入力欄内のキーより先に処理する必要がある）
+        const displayKey = movedKeys.find(k => k.keyChar === '入力欄');
+        if (displayKey) {
+            const { keyChar, xRatio, yRatio } = displayKey;
+            log.info(`Processing display first: ${keyChar}, ratio: (${xRatio}, ${yRatio})`);
+
+            // 入力欄のクローンを作成（子要素も含む）
+            const originalDisplay = document.getElementById('display');
+            const movableKey = originalDisplay.cloneNode(true);
+            movableKey.id = 'display-moved';
+            movableKey.dataset.key = '入力欄';
+            // AppStateから正しい入力テキストを取得
+            const inputText = AppState.get('inputText') || '';
+            movableKey.innerHTML = `${inputText}<div id="display-keys-container-moved"></div>`;
+            // スタイルを保持
+            movableKey.style.visibility = 'visible';
+            movableKey.style.opacity = '1';
+            movableKey.style.transform = '';
+            // サイズを元のサイズに固定
+            movableKey.style.width = 'calc(var(--key-size) * 3 + var(--key-gap) * 4)';
+            movableKey.style.height = 'calc(var(--key-size) * 1.1)';
+            movableKey.style.gridColumn = 'unset';
+            movableKey.style.margin = '0';
+
+            movableKey.style.position = 'absolute';
+            movableKey.style.zIndex = '1002'; // 入力欄より上に表示
+
+            // 比率から絶対座標を計算
+            const x = xRatio * viewerRect.width;
+            const y = yRatio * viewerRect.height;
+
+            movableKey.style.left = `${x}px`;
+            movableKey.style.top = `${y}px`;
+
+            // イベントリスナー
+            movableKey.addEventListener('mousedown', handleMovableKeyPress);
+            movableKey.addEventListener('touchstart', handleMovableKeyPress, { passive: false });
+
+            DOM.movableKeysContainer.appendChild(movableKey);
+        }
+
         movedKeys.forEach(({ keyChar, xRatio, yRatio }) => {
             log.info(`Processing moved key: ${keyChar}, ratio: (${xRatio}, ${yRatio})`);
-            
+
+            // 入力欄は既に処理済みなのでスキップ
+            if (keyChar === '入力欄') {
+                return;
+            }
+
             // 入力欄内のキー（xRatio, yRatio が負の値）
             if (xRatio < 0 && yRatio < 0) {
                 log.info(`Key "${keyChar}" is for display area`);
@@ -362,31 +408,8 @@ const DragSystem = (() => {
                 return;
             }
 
-            let movableKey;
-            
-            // 入力欄の場合は特別処理
-            if (keyChar === '入力欄') {
-                // 入力欄のクローンを作成（子要素も含む）
-                const originalDisplay = document.getElementById('display');
-                movableKey = originalDisplay.cloneNode(true);
-                movableKey.id = 'display-moved';
-                movableKey.dataset.key = '入力欄';
-                // AppStateから正しい入力テキストを取得
-                const inputText = AppState.get('inputText') || '';
-                movableKey.innerHTML = `${inputText}<div id="display-keys-container-moved"></div>`;
-                // スタイルを保持
-                movableKey.style.visibility = 'visible';
-                movableKey.style.opacity = '1';
-                movableKey.style.transform = '';
-                // サイズを元のサイズに固定
-                movableKey.style.width = 'calc(var(--key-size) * 3 + var(--key-gap) * 4)';
-                movableKey.style.height = 'calc(var(--key-size) * 1.1)';
-                movableKey.style.gridColumn = 'unset';
-                movableKey.style.margin = '0';
-            } else {
-                movableKey = Keyboard.createKeyElement(keyChar, true);
-            }
-            
+            // 通常のキーを作成
+            const movableKey = Keyboard.createKeyElement(keyChar, true);
             movableKey.style.position = 'absolute';
             movableKey.style.zIndex = '1002'; // 入力欄より上に表示
 
