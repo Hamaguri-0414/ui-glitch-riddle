@@ -132,9 +132,9 @@ const DragSystem = (() => {
 
         // 画像ビューワー内に収まっているか判定
         const isInViewer = isInsideElement(keyRect, viewerRect);
-        
-        // 入力欄内に収まっているか判定
-        const isInDisplay = checkIfInDisplay(keyRect);
+
+        // 入力欄内に収まっているか判定（ドラッグ中のキー自身を除外）
+        const isInDisplay = checkIfInDisplay(keyRect, key);
 
         const currentPuzzle = AppState.get('currentPuzzle');
 
@@ -205,7 +205,10 @@ const DragSystem = (() => {
             requestAnimationFrame(() => {
                 // 元のキーをクリーンアップ
                 if (fromMovable) {
-                    key.remove();
+                    // DOMに存在する場合のみ削除
+                    if (key.parentElement) {
+                        key.remove();
+                    }
                 } else {
                     // 入力欄の場合は特別処理
                     if (keyChar === '入力欄') {
@@ -231,6 +234,15 @@ const DragSystem = (() => {
                                 originalKey.style.transition = '';
                             });
                         }
+                    }
+                }
+
+                // 入力欄を画像外に戻した場合、元の入力欄の表示を確実に戻す
+                if (keyChar === '入力欄' && !(isInViewer || isInDisplay)) {
+                    const originalDisplay = document.getElementById('display');
+                    if (originalDisplay) {
+                        originalDisplay.style.visibility = '';
+                        originalDisplay.style.opacity = '';
                     }
                 }
 
@@ -455,14 +467,14 @@ const DragSystem = (() => {
     /**
      * 入力欄内にドロップされたかチェック
      */
-    function checkIfInDisplay(keyRect) {
+    function checkIfInDisplay(keyRect, draggingKey) {
         console.log('🔍 Checking if in display area...');
         console.log('📐 keyRect:', keyRect);
-        
+
         // 元の入力欄
         const originalDisplay = document.getElementById('display');
         console.log('📱 originalDisplay found:', !!originalDisplay);
-        if (originalDisplay && originalDisplay.style.visibility !== 'hidden') {
+        if (originalDisplay && originalDisplay !== draggingKey && originalDisplay.style.visibility !== 'hidden') {
             const displayRect = originalDisplay.getBoundingClientRect();
             console.log('📐 originalDisplayRect:', displayRect);
             if (isInsideElement(keyRect, displayRect)) {
@@ -470,11 +482,11 @@ const DragSystem = (() => {
                 return true;
             }
         }
-        
-        // 移動された入力欄
+
+        // 移動された入力欄（ドラッグ中のキー自身を除外）
         const movedDisplay = document.getElementById('display-moved');
         console.log('📱 movedDisplay found:', !!movedDisplay);
-        if (movedDisplay) {
+        if (movedDisplay && movedDisplay !== draggingKey) {
             const movedDisplayRect = movedDisplay.getBoundingClientRect();
             console.log('📐 movedDisplayRect:', movedDisplayRect);
             if (isInsideElement(keyRect, movedDisplayRect)) {
@@ -482,7 +494,7 @@ const DragSystem = (() => {
                 return true;
             }
         }
-        
+
         console.log('❌ Key is not in any display area');
         return false;
     }
