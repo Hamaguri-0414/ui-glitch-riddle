@@ -371,9 +371,9 @@ const DragSystem = (() => {
                 movableKey = originalDisplay.cloneNode(true);
                 movableKey.id = 'display-moved';
                 movableKey.dataset.key = '入力欄';
-                // 入力テキストのみを残し、子要素のキーコンテナは空にする
-                const textContent = originalDisplay.textContent || '';
-                movableKey.innerHTML = `${textContent}<div id="display-keys-container-moved"></div>`;
+                // AppStateから正しい入力テキストを取得
+                const inputText = AppState.get('inputText') || '';
+                movableKey.innerHTML = `${inputText}<div id="display-keys-container-moved"></div>`;
                 // スタイルを保持
                 movableKey.style.visibility = 'visible';
                 movableKey.style.opacity = '1';
