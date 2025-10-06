@@ -114,19 +114,50 @@
     grid-template-columns: 44px 1fr 44px;
     align-items: center;
     gap: 10px;
+    height: calc(var(--key-size) + 20px);
 }
 
 #display {
     grid-column: 2 / 3;
+    width: calc(var(--key-size) * 3 + var(--key-gap) * 4) !important;
+    height: calc(var(--key-size) * 1.1) !important;
     background-color: var(--color-white);
     border-radius: var(--border-radius);
-    padding: 12px;
-    font-size: clamp(18px, 5vw, 24px);
-    min-height: 1.5em;
-    line-height: 1.5;
+    padding: 0 12px;
+    font-size: calc(var(--key-size) * 0.8);
+    line-height: calc(var(--key-size) * 1.1);
     word-break: break-all;
     box-shadow: var(--shadow-sm);
     text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    pointer-events: none;
+    position: relative; /* 子要素の絶対配置の基準 */
+    transition: background-color var(--transition-fast), transform var(--transition-fast), opacity var(--transition-normal), visibility var(--transition-normal);
+}
+
+#display.dragging {
+    z-index: 1000;
+    box-shadow: var(--shadow-lg);
+    cursor: grabbing;
+    transition: none;
+}
+
+#display-keys-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: var(--z-display-keys);
+}
+
+#display-keys-container .key {
+    pointer-events: auto;
+    position: absolute;
 }
 
 /* キーボードエリア */

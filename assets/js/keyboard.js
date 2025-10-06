@@ -45,6 +45,7 @@ const Keyboard = (() => {
         keyboardContainer: null,
         flickGuide: null,
         display: null,
+        displayArea: null,
     };
 
     /**
@@ -54,6 +55,7 @@ const Keyboard = (() => {
         DOM.keyboardContainer = $('#keyboard-container');
         DOM.flickGuide = $('#flick-guide');
         DOM.display = $('#display');
+        DOM.displayArea = $('#display-area');
 
         if (!DOM.keyboardContainer) {
             log.error('Keyboard container not found');
@@ -110,6 +112,10 @@ const Keyboard = (() => {
         // キーボードコンテナにイベント委譲
         DOM.keyboardContainer.addEventListener('mousedown', handlePressStart);
         DOM.keyboardContainer.addEventListener('touchstart', handlePressStart, { passive: false });
+        
+        // 入力欄エリアにもイベント委譲
+        DOM.displayArea.addEventListener('mousedown', handlePressStart);
+        DOM.displayArea.addEventListener('touchstart', handlePressStart, { passive: false });
     }
 
     /**
@@ -166,6 +172,13 @@ const Keyboard = (() => {
         const pos = getEventPosition(e);
         const dx = pos.x - flickingState.startX;
         const dy = pos.y - flickingState.startY;
+        
+        // 長押し中の小さな移動は無視（ドラッグ準備として扱う）
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance < 50 && flickingState.longPressTimer) {
+            // 長押しタイマーが有効な間は、小さな移動を無視
+            return;
+        }
 
         const newDirection = getFlickDirection(dx, dy);
         if (newDirection !== flickingState.direction) {
@@ -316,8 +329,26 @@ const Keyboard = (() => {
      * 表示を更新
      */
     function updateDisplay() {
+        const inputText = AppState.get('inputText');
+        
+        // 元の入力欄を更新（子要素を保持しながら）
         if (DOM.display) {
-            DOM.display.textContent = AppState.get('inputText');
+            // キーコンテナを保持しながらテキストのみ更新
+            const keysContainer = DOM.display.querySelector('#display-keys-container');
+            DOM.display.textContent = inputText;
+            if (keysContainer) {
+                DOM.display.appendChild(keysContainer);
+            }
+        }
+        
+        // 移動された入力欄も更新
+        const movedDisplay = document.getElementById('display-moved');
+        if (movedDisplay) {
+            const movedKeysContainer = movedDisplay.querySelector('#display-keys-container-moved');
+            movedDisplay.textContent = inputText;
+            if (movedKeysContainer) {
+                movedDisplay.appendChild(movedKeysContainer);
+            }
         }
     }
 

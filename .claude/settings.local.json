@@ -6,7 +6,8 @@
       "Bash(git push:*)",
       "Bash(start index.html)",
       "Bash(cat:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(open index.html)"
     ],
     "deny": [],
     "ask": []

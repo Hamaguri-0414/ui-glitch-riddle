@@ -72,12 +72,12 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    width: var(--key-size);
-    height: var(--key-size);
+    width: calc(var(--key-size) * 0.8);
+    height: calc(var(--key-size) * 0.8);
     margin: auto;
     background-color: var(--color-white);
     border-radius: var(--border-radius);
-    font-size: var(--key-font-size);
+    font-size: calc(var(--key-font-size) * 0.8);
     font-weight: 500;
     box-shadow: var(--shadow-md);
     transition: background-color var(--transition-fast), transform var(--transition-fast), opacity var(--transition-normal), visibility var(--transition-normal);
@@ -87,7 +87,7 @@
 
 .key.functional {
     background-color: var(--color-gray-light);
-    font-size: calc(var(--key-font-size) * 0.8);
+    font-size: calc(var(--key-font-size) * 0.64);
 }
 
 .key.functional:active {
@@ -120,14 +120,14 @@
 /* === フリックガイド === */
 #flick-guide {
     position: fixed;
-    width: calc(var(--key-size) * 3);
-    height: calc(var(--key-size) * 3);
+    width: calc(var(--key-size) * 3 * 0.8);
+    height: calc(var(--key-size) * 3 * 0.8);
     transform: translate(-50%, -50%);
     pointer-events: none;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     grid-template-rows: 1fr 1fr 1fr;
-    font-size: var(--key-font-size);
+    font-size: calc(var(--key-font-size) * 0.8);
     z-index: var(--z-flick-guide);
 }
 
