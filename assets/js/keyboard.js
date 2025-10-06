@@ -46,6 +46,7 @@ const Keyboard = (() => {
         flickGuide: null,
         display: null,
         displayArea: null,
+        movableKeysContainer: null,
     };
 
     /**
@@ -56,6 +57,7 @@ const Keyboard = (() => {
         DOM.flickGuide = $('#flick-guide');
         DOM.display = $('#display');
         DOM.displayArea = $('#display-area');
+        DOM.movableKeysContainer = $('#movable-keys-container');
 
         if (!DOM.keyboardContainer) {
             log.error('Keyboard container not found');
@@ -112,10 +114,14 @@ const Keyboard = (() => {
         // キーボードコンテナにイベント委譲
         DOM.keyboardContainer.addEventListener('mousedown', handlePressStart);
         DOM.keyboardContainer.addEventListener('touchstart', handlePressStart, { passive: false });
-        
+
         // 入力欄エリアにもイベント委譲
         DOM.displayArea.addEventListener('mousedown', handlePressStart);
         DOM.displayArea.addEventListener('touchstart', handlePressStart, { passive: false });
+
+        // 移動可能なキーコンテナにもイベント委譲
+        DOM.movableKeysContainer.addEventListener('mousedown', handlePressStart);
+        DOM.movableKeysContainer.addEventListener('touchstart', handlePressStart, { passive: false });
     }
 
     /**

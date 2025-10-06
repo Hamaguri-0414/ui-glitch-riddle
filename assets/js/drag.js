@@ -354,6 +354,9 @@ const DragSystem = (() => {
             movableKey.addEventListener('touchstart', handleMovableKeyPress, { passive: false });
 
             DOM.movableKeysContainer.appendChild(movableKey);
+
+            // レイアウト強制更新
+            movableKey.offsetHeight;
         }
 
         movedKeys.forEach(({ keyChar, xRatio, yRatio }) => {
@@ -399,6 +402,7 @@ const DragSystem = (() => {
                     displayKey.style.transform = 'translate(-50%, -50%)'; // 中央基準で配置
                     displayKey.style.zIndex = '20'; // 親要素より上に表示
                     displayKey.style.pointerEvents = 'auto';
+                    displayKey.style.opacity = '0'; // 最初は非表示
 
                     // イベントリスナー
                     displayKey.addEventListener('mousedown', handleMovableKeyPress);
@@ -415,6 +419,7 @@ const DragSystem = (() => {
 
                         displayKey.style.left = `${xPos}px`;
                         displayKey.style.top = `${yPos}px`;
+                        displayKey.style.opacity = '1'; // 位置設定後に表示
 
                         console.log(`🔑 Key "${keyChar}" positioned at (${xPos.toFixed(1)}, ${yPos.toFixed(1)}) in container:`, targetContainer.id);
                         console.log(`🔑 Container size:`, containerWidth, 'x', containerHeight);

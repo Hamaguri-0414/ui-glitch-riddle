@@ -159,7 +159,8 @@
     transform: none;
 }
 
-#display-keys-container {
+#display-keys-container,
+#display-keys-container-moved {
     position: absolute;
     top: 0;
     left: 0;
@@ -169,7 +170,8 @@
     z-index: var(--z-display-keys);
 }
 
-#display-keys-container .key {
+#display-keys-container .key,
+#display-keys-container-moved .key {
     pointer-events: auto;
     position: absolute;
 }
