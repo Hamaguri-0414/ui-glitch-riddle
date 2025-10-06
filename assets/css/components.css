@@ -145,6 +145,7 @@
     background-color: rgba(255, 255, 255, 0.95);
     box-shadow: var(--shadow-md);
     color: transparent;
+    font-weight: 500;
     transition: background-color var(--transition-fast), transform var(--transition-fast), color var(--transition-fast);
 }
 
@@ -178,8 +179,22 @@
     grid-area: 3 / 2;
 }
 
+/* や: 左右を非表示（上・中央・下のみ） */
+#flick-guide.flick-guide-ya .flick-char:nth-child(2) {
+    display: none; /* left */
+}
+
+#flick-guide.flick-guide-ya .flick-char:nth-child(4) {
+    display: none; /* right */
+}
+
+/* わ: 右・下を非表示（上・左・中央のみ） */
+#flick-guide.flick-guide-wa .flick-char:nth-child(4) {
+    display: none; /* right */
+}
+
 #flick-guide.flick-guide-wa .flick-char:nth-child(5) {
-    display: none;
+    display: none; /* down */
 }
 
 /* === ユーティリティ === */

@@ -21,9 +21,9 @@ const Keyboard = (() => {
     // キーボードレイアウト
     const KEYBOARD_LAYOUT = [
         ['説明', 'あ', 'か', 'さ', '削除'],
-        ['ヒント', 'た', 'な', 'は'],
-        ['゛', 'ま', 'や', 'ら'],
-        ['わ', '', '確定'],
+        ['ヒント', 'た', 'な', 'は', ''],
+        ['', 'ま', 'や', 'ら', ''],
+        ['', '゛', 'わ', '確定', ''],
     ];
 
     // 方向とガイドインデックスのマッピング
@@ -214,8 +214,10 @@ const Keyboard = (() => {
         // 文字キー以外はガイド表示しない
         if (!chars) return;
 
-        // 'わ'の場合は下方向なし
-        if (keyChar === 'わ') {
+        // 特殊なキーのクラス設定
+        if (keyChar === 'や') {
+            addClass(DOM.flickGuide, 'flick-guide-ya');
+        } else if (keyChar === 'わ') {
             addClass(DOM.flickGuide, 'flick-guide-wa');
         }
 
@@ -246,6 +248,7 @@ const Keyboard = (() => {
      */
     function hideFlickGuide() {
         addClass(DOM.flickGuide, 'hidden');
+        removeClass(DOM.flickGuide, 'flick-guide-ya');
         removeClass(DOM.flickGuide, 'flick-guide-wa');
     }
 
@@ -267,6 +270,8 @@ const Keyboard = (() => {
      */
     function handleInput(keyChar, direction) {
         const index = DIRECTION_TO_KEYMAP_INDEX[direction];
+
+        log.info(`Input: key="${keyChar}", direction="${direction}"`);
 
         switch (keyChar) {
             case '削除':
@@ -326,22 +331,36 @@ const Keyboard = (() => {
         const lastChar = currentText[currentText.length - 1];
         const converted = convertToDakuten(lastChar);
 
-        if (converted !== lastChar) {
-            AppState.set({ inputText: currentText.slice(0, -1) + converted });
-            updateDisplay();
-        }
+        log.info(`Dakuten: "${lastChar}" → "${converted}"`);
+
+        // 常に更新（変換できない文字の場合は同じ文字が設定される）
+        AppState.set({ inputText: currentText.slice(0, -1) + converted });
+        updateDisplay();
     }
 
     /**
      * 濁点・半濁点変換
+     * か → が → か
+     * さ → ざ → さ
+     * た → だ → た
+     * は → ば → ぱ → は
      */
     function convertToDakuten(char) {
         const dakutenMap = {
+            // 清音 → 濁音
             'か': 'が', 'き': 'ぎ', 'く': 'ぐ', 'け': 'げ', 'こ': 'ご',
             'さ': 'ざ', 'し': 'じ', 'す': 'ず', 'せ': 'ぜ', 'そ': 'ぞ',
             'た': 'だ', 'ち': 'ぢ', 'つ': 'づ', 'て': 'で', 'と': 'ど',
             'は': 'ば', 'ひ': 'び', 'ふ': 'ぶ', 'へ': 'べ', 'ほ': 'ぼ',
+
+            // 濁音 → 半濁音（は行のみ）または 清音に戻る
+            'が': 'か', 'ぎ': 'き', 'ぐ': 'く', 'げ': 'け', 'ご': 'こ',
+            'ざ': 'さ', 'じ': 'し', 'ず': 'す', 'ぜ': 'せ', 'ぞ': 'そ',
+            'だ': 'た', 'ぢ': 'ち', 'づ': 'つ', 'で': 'て', 'ど': 'と',
             'ば': 'ぱ', 'び': 'ぴ', 'ぶ': 'ぷ', 'べ': 'ぺ', 'ぼ': 'ぽ',
+
+            // 半濁音 → 清音
+            'ぱ': 'は', 'ぴ': 'ひ', 'ぷ': 'ふ', 'ぺ': 'へ', 'ぽ': 'ほ',
         };
 
         return dakutenMap[char] || char;
