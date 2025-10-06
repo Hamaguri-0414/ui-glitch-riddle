@@ -132,9 +132,9 @@
 /* キーボードエリア */
 #keyboard-container {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: var(--key-gap);
-    padding: var(--key-gap) calc(var(--key-size) + var(--key-gap)) 6vw;
+    padding: var(--key-gap);
     user-select: none;
     touch-action: none;
     background-color: var(--color-background);

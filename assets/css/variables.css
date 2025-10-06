@@ -8,11 +8,11 @@
     --image-width: var(--container-width);
     --image-height: calc(var(--image-width) * 0.75);
 
-    /* === UIパーツサイズ (画像幅の比率ベース) === */
-    --key-size: calc(var(--image-width) * 0.18);
-    --key-gap: calc(var(--image-width) * 0.02);
+    /* === UIパーツサイズ (コンテナ幅の比率ベース) === */
+    --key-size: calc(var(--container-width) / 5 - var(--key-gap) * 2);
+    --key-gap: 0.5vw;
     --key-font-size: calc(var(--key-size) * 0.36);
-    --border-radius: calc(var(--image-width) * 0.02);
+    --border-radius: 8px;
 
     /* === カラーパレット === */
     --color-background: #f0f2f5;
