@@ -133,9 +133,14 @@
     align-items: center;
     justify-content: center;
     margin: 0 auto;
-    pointer-events: none;
+    cursor: pointer;
     position: relative; /* 子要素の絶対配置の基準 */
     transition: background-color var(--transition-fast), transform var(--transition-fast), opacity var(--transition-normal), visibility var(--transition-normal);
+}
+
+#display:active {
+    background-color: var(--color-white);
+    transform: none;
 }
 
 #display.dragging {
@@ -143,6 +148,15 @@
     box-shadow: var(--shadow-lg);
     cursor: grabbing;
     transition: none;
+}
+
+#display-moved {
+    cursor: pointer;
+}
+
+#display-moved:active {
+    background-color: var(--color-white);
+    transform: none;
 }
 
 #display-keys-container {
