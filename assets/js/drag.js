@@ -335,6 +335,7 @@ const DragSystem = (() => {
             // サイズを元のサイズに固定
             movableKey.style.width = 'calc(var(--key-size) * 3 + var(--key-gap) * 4)';
             movableKey.style.height = 'calc(var(--key-size) * 1.1)';
+            movableKey.style.fontSize = 'calc(var(--key-size) * 0.8)';
             movableKey.style.gridColumn = 'unset';
             movableKey.style.margin = '0';
 
