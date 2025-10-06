@@ -308,16 +308,16 @@ const DragSystem = (() => {
             // 入力欄内のキー（xRatio, yRatio が負の値）
             if (xRatio < 0 && yRatio < 0) {
                 log.info(`Key "${keyChar}" is for display area`);
-                
-                // 元の入力欄または移動された入力欄のキーコンテナを探す
-                let targetContainer = document.getElementById('display-keys-container');
-                console.log('🔍 Original container found:', !!targetContainer);
-                
+
+                // 移動された入力欄のキーコンテナを優先的に探す
+                let targetContainer = document.getElementById('display-keys-container-moved');
+                console.log('🔍 Moved container found:', !!targetContainer);
+
                 if (!targetContainer) {
-                    targetContainer = document.getElementById('display-keys-container-moved');
-                    console.log('🔍 Moved container found:', !!targetContainer);
+                    targetContainer = document.getElementById('display-keys-container');
+                    console.log('🔍 Original container found:', !!targetContainer);
                 }
-                
+
                 // それでも見つからない場合は、DOM.displayKeysContainerを使用（最新の参照を取得）
                 if (!targetContainer) {
                     // DOM.displayKeysContainerの参照を更新
@@ -325,7 +325,7 @@ const DragSystem = (() => {
                     targetContainer = DOM.displayKeysContainer;
                     console.log('🔍 Updated DOM container found:', !!targetContainer);
                 }
-                
+
                 log.info('targetContainer exists:', !!targetContainer);
                 
                 if (targetContainer) {
